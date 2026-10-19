@@ -1,34 +1,34 @@
 #!/usr/bin/env bash
 #
-# validate-bash.sh — Garde-fou basique appelé par le hook natif Copilot CLI
-# "preToolUse" (voir .github/hooks/validate-bash.json) avant l'exécution
-# d'un outil shell/bash.
+# validate-bash.sh — Basic safeguard called by the native Copilot CLI
+# "preToolUse" hook (see .github/hooks/validate-bash.json) before a
+# shell/bash tool is executed.
 #
-# Le hook reçoit en entrée (stdin) un JSON décrivant l'appel d'outil
-# (nom de l'outil, arguments). Ce script :
-#   - ignore silencieusement les outils qui ne sont pas des exécutions shell,
-#   - bloque les commandes correspondant à un motif dangereux en répondant
-#     {"permissionDecision":"deny","permissionDecisionReason":"..."} sur
+# The hook receives (on stdin) a JSON describing the tool call
+# (tool name, arguments). This script:
+#   - silently ignores tools that are not shell executions,
+#   - blocks commands matching a dangerous pattern by replying
+#     {"permissionDecision":"deny","permissionDecisionReason":"..."} on
 #     stdout,
-#   - laisse passer tout le reste (aucune sortie / sortie vide = autorisé).
+#   - lets everything else through (no output / empty output = allowed).
 #
-# NB : le contrat exact d'entrée/sortie des hooks "command" n'est pas
-# publiquement documenté en détail ; ce script reste volontairement
-# défensif (scan texte brut) plutôt que de dépendre d'un schéma JSON précis.
+# NB: the exact input/output contract of "command" hooks is not publicly
+# documented in detail; this script is deliberately defensive (raw text
+# scan) rather than depending on a precise JSON schema.
 
 set -euo pipefail
 
 INPUT="$(cat || true)"
 
-# Ne réagir que si l'appel semble concerner un outil shell/bash.
+# Only react if the call appears to concern a shell/bash tool.
 if ! echo "${INPUT}" | grep -Eiq '"toolName"\s*:\s*"(bash|shell|execute)"'; then
   exit 0
 fi
 
 UPPER_INPUT=$(echo "${INPUT}" | tr '[:lower:]' '[:upper:]')
 
-# Motifs interdits (insensible à la casse) : commandes destructrices,
-# DDL/DML Oracle, exfiltration, modification de permissions critiques, etc.
+# Forbidden patterns (case-insensitive): destructive commands,
+# Oracle DDL (schema changes; data CRUD is allowed), exfiltration, critical permission changes, etc.
 DENY_PATTERNS=(
   'RM[[:space:]]+-RF[[:space:]]+/'
   'RM[[:space:]]+-RF[[:space:]]+\*'
@@ -40,10 +40,8 @@ DENY_PATTERNS=(
   'WGET[^|]*\|[[:space:]]*SH'
   'DROP[[:space:]]+(TABLE|DATABASE|SCHEMA|USER)'
   'TRUNCATE[[:space:]]+TABLE'
-  'DELETE[[:space:]]+FROM'
-  'INSERT[[:space:]]+INTO'
-  'UPDATE[[:space:]]+.*SET'
   'ALTER[[:space:]]+(TABLE|DATABASE|SYSTEM)'
+  'CREATE[[:space:]]+(TABLE|INDEX|VIEW|SEQUENCE)'
   'GRANT[[:space:]]+'
   'REVOKE[[:space:]]+'
   'SHUTDOWN[[:space:]]'
@@ -52,7 +50,7 @@ DENY_PATTERNS=(
 
 for pattern in "${DENY_PATTERNS[@]}"; do
   if echo "${UPPER_INPUT}" | grep -Eq "${pattern}"; then
-    printf '{"permissionDecision":"deny","permissionDecisionReason":"Commande refusée par validate-bash.sh (motif interdit détecté: %s)."}\n' "${pattern}"
+    printf '{"permissionDecision":"deny","permissionDecisionReason":"Command denied by validate-bash.sh (forbidden pattern detected: %s)."}\n' "${pattern}"
     exit 0
   fi
 done

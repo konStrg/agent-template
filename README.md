@@ -1,114 +1,136 @@
-# Template Java / Spring Boot / Maven — TDD + Agents Copilot
+# Java / Spring Boot / Maven Template — TDD + Copilot Agents
 
-Template de projet orienté **TDD strict** et **orchestration multi-agents
-native GitHub Copilot CLI**, pour des applications Java 21 / Spring Boot 3 /
-Apache Camel / Maven.
+Project template focused on **strict TDD** and **native GitHub Copilot CLI
+multi-agent orchestration**, for Java 21 / Spring Boot 3 / Apache Camel /
+Maven applications.
 
-## Démarrage rapide
+## Quick start
 
 ```bash
-cd mon-projet
+cd my-project
 copilot
 ```
 
-`.github/copilot-instructions.md` est chargé automatiquement : Copilot
-adopte par défaut le rôle d'**Orchestrateur** et applique le workflow TDD
-décrit plus bas. Il suffit de décrire la feature voulue :
+`.github/copilot-instructions.md` is loaded automatically: Copilot adopts
+the **Orchestrator** role by default, which applies the TDD workflow
+described below from a **spec** produced upstream by the Architect.
 
-```
-Ajoute une fonctionnalité de recherche de client par email.
-```
+## Workflow: spec (Architect) then TDD (Orchestrator)
 
-## Workflow TDD en 4 étapes
+### Phase 0 — Specification (Architect, dedicated session)
 
-L'Orchestrateur délègue systématiquement à 4 rôles, dans cet ordre :
-
-1. **Architect** — analyse le besoin, consulte `ARCHITECTURE.md` et
-   `project-structure.instructions.md`, produit les specs/DTOs/contrats
-   dans `docs/specs/`.
-2. **Test** — écrit les tests (JUnit 5, AssertJ, Mockito) dans
-   `src/test/java/`, exécute `mvn test` et confirme le statut **ROUGE**.
-3. **Dev** — implémente le code minimal dans `src/main/java/` pour passer
-   au statut **VERT**.
-4. **Reviewer** — vérifie qualité, sécurité et conformité aux règles avant
-   validation finale.
-
-> Règle absolue : aucun code de production n'est écrit avant que son test
-> existe et échoue.
-
-## Utiliser un rôle précis directement
-
-Chaque rôle est aussi un agent Copilot natif, invocable isolément :
+The Architect is called separately to generate the feature spec:
 
 ```bash
-copilot --agent architect   # ou: test, dev, reviewer, orchestrator
+copilot --agent architect
 ```
 
-ou en session interactive : `/agent architect`.
+```
+Add a feature to search for a customer by email.
+```
 
-## Structure du template
+**Architect** — analyzes the need, consults `ARCHITECTURE.md` and
+`project-structure.instructions.md`, produces the specs/DTOs/contracts in
+`docs/specs/`. It writes neither tests nor production code.
+
+### Phase 1 — Implementation (Orchestrator)
+
+The spec is then given to the Orchestrator (default agent):
+
+```
+Implement the spec docs/specs/<feature>.md
+```
+
+The Orchestrator systematically delegates to 3 roles, in this order:
+
+1. **Test** — writes the tests (JUnit 5, AssertJ, Mockito) in
+   `src/test/java/` from the spec, runs `mvn test` and confirms the
+   **RED** status.
+2. **Dev** — implements the minimal code in `src/main/java/` to reach the
+   **GREEN** status.
+3. **Reviewer** — checks quality, security and compliance with the rules
+   before final approval.
+
+If no spec is provided, the Orchestrator asks for one to be generated
+first with the Architect.
+
+> Absolute rule: no production code is written before its test exists and
+> fails.
+
+## Using a specific role directly
+
+Each role is also a native Copilot agent, which can be invoked on its own:
+
+```bash
+copilot --agent architect   # or: test, dev, reviewer, orchestrator
+```
+
+or in an interactive session: `/agent architect`.
+
+## Template structure
 
 ```
 .github/
-├── copilot-instructions.md   # instructions globales (rôle par défaut + TDD)
-├── mcp.json                  # configuration des serveurs MCP
+├── copilot-instructions.md   # global instructions (default role + TDD)
+├── mcp.json                  # MCP server configuration
 ├── copilot/
-│   └── settings.json         # réglages repo (permissions, agents custom)
-├── agents/                   # 5 agents natifs (*.agent.md)
+│   └── settings.json         # repo settings (permissions, custom agents)
+├── agents/                   # 5 native agents (*.agent.md)
 │   ├── orchestrator.agent.md
 │   ├── architect.agent.md
 │   ├── test.agent.md
 │   ├── dev.agent.md
 │   └── reviewer.agent.md
-├── instructions/              # règles auto-injectées (*.instructions.md)
+├── instructions/              # auto-injected rules (*.instructions.md)
 │   ├── code-style.instructions.md
 │   ├── project-structure.instructions.md
 │   ├── database.instructions.md
 │   └── security.instructions.md
-├── skills/                    # compétences (build, vérifications SQL)
+├── skills/                    # skills (build, SQL checks)
 │   ├── maven-build/SKILL.md
 │   └── oracle-tester/SKILL.md (+ query-config.env)
-└── hooks/                     # garde-fou shell (preToolUse)
+└── hooks/                     # shell safeguard (preToolUse)
     ├── validate-bash.json
     └── validate-bash.sh
 
-ARCHITECTURE.md       # vue d'ensemble, cartographie multi-repo
-.copilot-agents.md    # carte d'identité lisible des agents (doc humaine)
-docs/specs/           # specs produites par l'Architect
-src/main/java/        # code de production
+ARCHITECTURE.md       # overview, multi-repo map
+.copilot-agents.md    # human-readable agent identity card (human doc)
+docs/specs/           # specs produced by the Architect
+src/main/java/        # production code
 src/test/java/        # tests
 ```
 
-## Règles clés à connaître
+## Key rules to know
 
-- **`.github/instructions/project-structure.instructions.md`** : où placer
-  chaque type de code (contrôleur, service, repository, DTO, route Camel...)
-  par domaine/module/repo. Consultée et mise à jour par l'Architect.
-- **`.github/instructions/database.instructions.md`** : accès Oracle en
-  lecture seule stricte, aucun DDL/DML direct par un agent.
-- **`.github/instructions/security.instructions.md`** : pas de secrets en
-  dur, validation systématique des entrées.
-- **`ARCHITECTURE.md`** : à compléter dès l'import du template dans un
-  projet réel (domaines, modules Maven, cartographie multi-repo si
+- **`.github/instructions/project-structure.instructions.md`**: where to
+  place each type of code (controller, service, repository, DTO, Camel
+  route...) per domain/module/repo. Consulted and updated by the
+  Architect.
+- **`.github/instructions/database.instructions.md`**: Oracle data CRUD
+  allowed, no DDL (schema changes) by an agent.
+- **`.github/instructions/security.instructions.md`**: no hardcoded
+  secrets, systematic input validation.
+- **`ARCHITECTURE.md`**: to be completed as soon as the template is
+  imported into a real project (domains, Maven modules, multi-repo map if
   applicable).
 
-## À adapter à l'import dans un nouveau projet
+## To adapt when importing into a new project
 
-1. Remplir les sections vides d'`ARCHITECTURE.md` (vue d'ensemble, modules,
-   repos liés).
-2. Compléter les tableaux de
-   `.github/instructions/project-structure.instructions.md` avec les
-   domaines réels du projet.
-3. Mettre à jour `.github/skills/oracle-tester/query-config.env` avec la
-   configuration de connexion réelle (jamais de secret en clair committé).
-4. Vérifier la détection avec :
+1. Fill in the empty sections of `ARCHITECTURE.md` (overview, modules,
+   linked repos).
+2. Complete the tables in
+   `.github/instructions/project-structure.instructions.md` with the
+   project's real domains.
+3. Update `.github/skills/oracle-tester/query-config.env` with the real
+   connection configuration (never commit a plain-text secret).
+4. Check detection with:
    ```bash
    copilot instruction list
    copilot skill list
    ```
 
-## Vérifié avec Copilot CLI
+## Verified with Copilot CLI
 
-Les 5 agents, les 4 fichiers d'instructions et les 2 compétences ont été
-testés et sont correctement détectés/exécutables nativement (`copilot
-instruction list`, `copilot skill list`, `copilot --agent <nom>`).
+The 5 agents, the 4 instruction files and the 2 skills have been tested
+and are correctly detected/executable natively (`copilot
+instruction list`, `copilot skill list`, `copilot --agent <name>`).

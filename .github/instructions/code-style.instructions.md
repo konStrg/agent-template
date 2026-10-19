@@ -2,54 +2,53 @@
 applyTo: "**"
 ---
 
-# Règles de style de code — Java 21 / Spring Boot / Lombok / Apache Camel
+# Code style rules — Java 21 / Spring Boot / Lombok / Apache Camel
 
 ## Java 21
 
-- Utiliser les **records** pour les DTOs immuables.
-- Utiliser le **pattern matching** (`instanceof`, `switch` expressions) pour
-  simplifier les conditions.
-- Utiliser les **text blocks** (`"""`) pour les chaînes multilignes (SQL,
-  JSON de test, etc.).
-- Préférer `var` uniquement quand le type est évident à la lecture.
-- Activer et respecter les règles du compilateur (`-Werror` recommandé en
-  CI si configuré).
+- Use **records** for immutable DTOs.
+- Use **pattern matching** (`instanceof`, `switch` expressions) to
+  simplify conditions.
+- Use **text blocks** (`"""`) for multiline strings (SQL,
+  test JSON, etc.).
+- Prefer `var` only when the type is obvious when reading.
+- Enable and respect compiler rules (`-Werror` recommended in
+  CI if configured).
 
 ## Spring Boot
 
-- **Injection par constructeur uniquement** (jamais de `@Autowired` sur un
-  champ). Utiliser Lombok `@RequiredArgsConstructor` pour générer le
-  constructeur.
-- Annoter clairement les couches : `@RestController`, `@Service`,
+- **Constructor injection only** (never `@Autowired` on a
+  field). Use Lombok `@RequiredArgsConstructor` to generate the
+  constructor.
+- Clearly annotate layers: `@RestController`, `@Service`,
   `@Repository`, `@Configuration`.
-- Les contrôleurs ne contiennent **aucune logique métier** : ils délèguent
-  aux services.
-- Utiliser `@Valid` / `jakarta.validation` sur les DTOs d'entrée des
-  endpoints.
-- Centraliser la gestion des erreurs via `@ControllerAdvice` /
+- Controllers contain **no business logic**: they delegate
+  to services.
+- Use `@Valid` / `jakarta.validation` on endpoint input DTOs.
+- Centralize error handling via `@ControllerAdvice` /
   `@ExceptionHandler`.
 
 ## Lombok
 
-- Utiliser `@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`,
-  `@Slf4j` pour réduire le boilerplate.
-- Éviter `@Data` sur les entités JPA (risque de boucle `equals`/`hashCode`
-  sur les relations) ; préférer des annotations explicites.
-- Ne jamais utiliser `@SneakyThrows` sauf cas exceptionnel documenté.
+- Use `@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`,
+  `@Slf4j` to reduce boilerplate.
+- Avoid `@Data` on JPA entities (risk of `equals`/`hashCode` loop
+  on relations); prefer explicit annotations.
+- Never use `@SneakyThrows` except in documented exceptional cases.
 
 ## Apache Camel
 
-- Définir les routes dans des classes dédiées héritant de
-  `RouteBuilder`, une route par flux métier.
-- Nommer les routes de façon explicite (`from("...").routeId("nomExplicite")`).
-- Isoler la logique métier dans des beans/services injectés, pas directement
-  dans les routes (`.bean(...)` plutôt que du code inline complexe).
-- Gérer les erreurs via `onException(...)` plutôt que des try/catch
-  dispersés.
+- Define routes in dedicated classes extending
+  `RouteBuilder`, one route per business flow.
+- Name routes explicitly (`from("...").routeId("explicitName")`).
+- Isolate business logic in injected beans/services, not directly
+  in routes (`.bean(...)` rather than complex inline code).
+- Handle errors via `onException(...)` rather than scattered
+  try/catch blocks.
 
-## Général
+## General
 
-- Nommage des packages : `com.<organisation>.<projet>.<domaine>`.
-- Classes, méthodes et variables en anglais, noms explicites.
-- Pas de code mort, pas de `TODO` non justifié.
-- Limiter la complexité cyclomatique des méthodes (extraire si > ~10).
+- Package naming: `com.<organisation>.<project>.<domain>`.
+- Classes, methods and variables in English, with explicit names.
+- No dead code, no unjustified `TODO`.
+- Limit the cyclomatic complexity of methods (extract if > ~10).

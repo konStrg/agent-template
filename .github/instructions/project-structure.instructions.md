@@ -2,89 +2,90 @@
 applyTo: "**"
 ---
 
-# Règles de placement du code (structure projet / modules)
+# Code placement rules (project structure / modules)
 
-> Objectif : garantir que chaque type de fonctionnalité est toujours écrit
-> **au même endroit**, quel que soit l'agent (Architect, Dev) ou le
-> développeur humain qui intervient. Ce fichier est la **source de vérité**
-> pour "où écrire quoi". Il complète `ARCHITECTURE.md` (vue macro) avec des
-> règles précises et actionnables.
+> Goal: ensure that each type of feature is always written
+> **in the same place**, regardless of the agent (Architect, Dev) or
+> human developer involved. This file is the **source of truth**
+> for "what to write where". It complements `ARCHITECTURE.md` (macro view) with
+> precise, actionable rules.
 
-## 1. Principe
+## 1. Principle
 
-- Avant d'écrire un fichier, l'agent Dev **doit** déterminer son
-  emplacement à partir de ce document, pas par analogie avec un fichier
-  voisin.
-- Si une fonctionnalité ne correspond à aucune règle existante, l'agent
-  Dev doit remonter la question à l'Architecte (via l'Orchestrateur) plutôt
-  que d'inventer un nouvel emplacement.
-- Toute nouvelle convention de placement doit être ajoutée ici par
-  l'Architecte, et répercutée dans `ARCHITECTURE.md` si elle change la
-  structure macro.
+- Before writing a file, the Dev agent **must** determine its
+  location from this document, not by analogy with a neighboring
+  file.
+- If a feature matches no existing rule, the Dev agent
+  must escalate the question to the Architect (via the Orchestrator) rather than
+  inventing a new location.
+- Any new placement convention must be added here by
+  the Architect, and reflected in `ARCHITECTURE.md` if it changes the
+  macro structure.
 
-## 2. Structure monolithe / module unique
+## 2. Monolith / single-module structure
 
-| Type de code | Dossier | Package | Convention de nommage |
+| Code type | Folder | Package | Naming convention |
 |---|---|---|---|
-| Contrôleurs REST | `src/main/java/.../<domaine>/api/` | `....<domaine>.api` | `<Nom>Controller` |
-| Logique métier (services) | `src/main/java/.../<domaine>/service/` | `....<domaine>.service` | `<Nom>Service` (+ `<Nom>ServiceImpl` si interface séparée) |
-| Accès données | `src/main/java/.../<domaine>/repository/` | `....<domaine>.repository` | `<Nom>Repository` |
-| Entités JPA | `src/main/java/.../<domaine>/model/` | `....<domaine>.model` | `<Nom>` (nom métier, pas de suffixe) |
-| DTOs / contrats d'échange | `src/main/java/.../<domaine>/dto/` | `....<domaine>.dto` | `<Nom>Request`, `<Nom>Response`, `<Nom>Dto` |
-| Routes Apache Camel | `src/main/java/.../<domaine>/route/` | `....<domaine>.route` | `<Nom>Route` |
-| Configuration Spring | `src/main/java/.../<domaine>/config/` ou `.../config/` (transverse) | `....<domaine>.config` | `<Nom>Config` |
-| Mappers (MapStruct/manuel) | `src/main/java/.../<domaine>/mapper/` | `....<domaine>.mapper` | `<Nom>Mapper` |
-| Exceptions métier | `src/main/java/.../<domaine>/exception/` | `....<domaine>.exception` | `<Nom>Exception` |
-| Tests unitaires | `src/test/java/.../<domaine>/<couche>/` | miroir exact du package testé | `<Nom>Test` |
-| Tests d'intégration | `src/test/java/.../<domaine>/integration/` | `....<domaine>.integration` | `<Nom>IT` |
+| REST controllers | `src/main/java/.../<domain>/api/` | `....<domain>.api` | `<Name>Controller` |
+| Business logic (services) | `src/main/java/.../<domain>/service/` | `....<domain>.service` | `<Name>Service` (+ `<Name>ServiceImpl` if separate interface) |
+| Data access | `src/main/java/.../<domain>/repository/` | `....<domain>.repository` | `<Name>Repository` |
+| JPA entities | `src/main/java/.../<domain>/model/` | `....<domain>.model` | `<Name>` (business name, no suffix) |
+| DTOs / exchange contracts | `src/main/java/.../<domain>/dto/` | `....<domain>.dto` | `<Name>Request`, `<Name>Response`, `<Name>Dto` |
+| Apache Camel routes | `src/main/java/.../<domain>/route/` | `....<domain>.route` | `<Name>Route` |
+| Spring configuration | `src/main/java/.../<domain>/config/` or `.../config/` (cross-cutting) | `....<domain>.config` | `<Name>Config` |
+| Mappers (MapStruct/manual) | `src/main/java/.../<domain>/mapper/` | `....<domain>.mapper` | `<Name>Mapper` |
+| Business exceptions | `src/main/java/.../<domain>/exception/` | `....<domain>.exception` | `<Name>Exception` |
+| Unit tests | `src/test/java/.../<domain>/<layer>/` | exact mirror of the tested package | `<Name>Test` |
+| Integration tests | `src/test/java/.../<domain>/integration/` | `....<domain>.integration` | `<Name>IT` |
+| H2 test DDL / data (common to the whole application, never run on Oracle) | `sql/` at the repository root | n/a | `schema.sql`, `data.sql` (single shared schema, no per-module DDL) |
 
-`<domaine>` = sous-package métier (ex. `facturation`, `client`,
-`commande`). Chaque domaine suit la même structure interne
-(`api/service/repository/model/dto/route/...`), ce qui garantit une
-organisation "par fonctionnalité" plutôt que "par couche technique" au
-niveau racine.
+`<domain>` = business sub-package (e.g. `billing`, `customer`,
+`order`). Each domain follows the same internal structure
+(`api/service/repository/model/dto/route/...`), which guarantees an
+organization "by feature" rather than "by technical layer" at the
+root level.
 
-## 3. Structure multi-module Maven
+## 3. Maven multi-module structure
 
-> À activer si le projet est découpé en modules Maven (`pom.xml` parent +
-> sous-modules). Compléter le tableau en fonction des modules réels du
-> projet (voir aussi `ARCHITECTURE.md`, section 3).
+> To be enabled if the project is split into Maven modules (parent `pom.xml` +
+> submodules). Complete the table according to the project's actual modules
+> (see also `ARCHITECTURE.md`, section 3).
 
-| Fonctionnalité / Domaine | Module Maven | Remarque |
+| Feature / Domain | Maven module | Note |
 |---|---|---|
-| `<domaine-1>` | `<module-domaine-1>` | |
-| Code partagé (DTOs communs, utilitaires) | `<module>-common` | Aucune dépendance vers les autres modules métier |
-| Point d'entrée application (bootstrap Spring Boot) | `<module>-app` / `<module>-bootstrap` | Dépend de tous les modules métier nécessaires |
+| `<domain-1>` | `<module-domain-1>` | |
+| Shared code (common DTOs, utilities) | `<module>-common` | No dependency on the other business modules |
+| Application entry point (Spring Boot bootstrap) | `<module>-app` / `<module>-bootstrap` | Depends on all required business modules |
 
-Règles :
-- Un module métier ne dépend jamais d'un autre module métier directement :
-  passer par `*-common` ou par une interface exposée.
-- Aucune dépendance cyclique entre modules (vérifier avec
-  `mvn dependency:tree` si doute).
-- Le module `*-common` ne contient que du code générique et stable
-  (DTOs partagés, exceptions transverses, utilitaires) — jamais de logique
-  métier spécifique à un domaine.
+Rules:
+- A business module never depends directly on another business module:
+  go through `*-common` or an exposed interface.
+- No cyclic dependencies between modules (check with
+  `mvn dependency:tree` if in doubt).
+- The `*-common` module only contains generic, stable code
+  (shared DTOs, cross-cutting exceptions, utilities) — never business logic
+  specific to a domain.
 
-## 4. Système multi-repo
+## 4. Multi-repo system
 
-> Si l'application fait partie d'un système à plusieurs dépôts Git, se
-> référer à `ARCHITECTURE.md` section 2 pour savoir **dans quel repo**
-> une fonctionnalité doit être développée, avant d'appliquer les règles
-> de placement internes (sections 2/3 ci-dessus) **dans le bon repo**.
+> If the application is part of a system with several Git repositories, refer
+> to `ARCHITECTURE.md` section 2 to know **in which repo**
+> a feature must be developed, before applying the internal
+> placement rules (sections 2/3 above) **in the right repo**.
 
-Critères pour décider du bon repo (à adapter/compléter par l'Architecte) :
-- Un repo = une responsabilité métier ou technique clairement délimitée
+Criteria for deciding on the right repo (to be adapted/completed by the Architect):
+- One repo = one clearly delimited business or technical responsibility
   (bounded context).
-- Ne jamais dupliquer une logique métier déjà exposée par un autre repo :
-  consommer son contrat d'interface (API REST / événements) plutôt que de
-  réimplémenter.
-- Toute nouvelle fonctionnalité transverse à plusieurs repos doit être
-  découpée en sous-tâches par repo, chacune suivant son propre cycle TDD
-  complet (specs → tests → implémentation → review).
+- Never duplicate business logic already exposed by another repo:
+  consume its interface contract (REST API / events) rather than
+  reimplementing it.
+- Any new feature spanning several repos must be
+  split into sub-tasks per repo, each following its own complete TDD cycle
+  (specs → tests → implementation → review).
 
-## 5. Mise à jour de ce document
+## 5. Updating this document
 
-Ce fichier doit être mis à jour par l'agent **Architect** dès qu'un nouveau
-domaine, module ou type de composant est introduit. Le Reviewer vérifie
-lors de l'étape 4 que le code produit respecte bien ces règles de
-placement.
+This file must be updated by the **Architect** agent whenever a new
+domain, module or component type is introduced. The Reviewer checks
+at step 4 that the produced code complies with these placement
+rules.

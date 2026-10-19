@@ -1,91 +1,91 @@
-# Architecture du projet
+# Project Architecture
 
-> Document vivant maintenu par l'agent **Architect**. Toute évolution
-> structurelle notable (nouveau module, nouveau repo lié, nouveau composant)
-> doit être répercutée ici.
+> Living document maintained by the **Architect** agent. Any notable
+> structural change (new module, new linked repo, new component) must be
+> reflected here.
 
-## 1. Vue d'ensemble
+## 1. Overview
 
-<!-- Résumer en quelques phrases le rôle de l'application, son domaine
-métier, et son positionnement dans le système global. -->
+<!-- Summarize in a few sentences the role of the application, its business
+domain, and its position in the overall system. -->
 
-- **Nom de l'application** :
-- **Domaine métier** :
-- **Type** : monolithe / multi-module Maven / microservice
-- **Stack** : Java 21, Spring Boot 3, Apache Camel, Maven
+- **Application name**:
+- **Business domain**:
+- **Type**: monolith / multi-module Maven / microservice
+- **Stack**: Java 21, Spring Boot 3, Apache Camel, Maven
 
-## 2. Cartographie multi-repo
+## 2. Multi-repo map
 
-> À remplir uniquement si l'application fait partie d'un système composé de
-> plusieurs dépôts Git. Sinon, indiquer "N/A — repo unique".
+> To be filled in only if the application is part of a system made up of
+> several Git repositories. Otherwise, write "N/A — single repo".
 
-| Repo | Rôle / Responsabilité | Technologie | Dépendances (appelle / est appelé par) | Contrat d'interface |
+| Repo | Role / Responsibility | Technology | Dependencies (calls / is called by) | Interface contract |
 |---|---|---|---|---|
-| `<ce-repo>` | | | | |
-| `<autre-repo>` | | | | |
+| `<this-repo>` | | | | |
+| `<other-repo>` | | | | |
 
-### Flux inter-repos
+### Inter-repo flows
 
-<!-- Décrire les échanges entre dépôts : API REST synchrones, messages
-asynchrones (Kafka, JMS, Camel), fichiers partagés, base de données
-partagée, etc. Un diagramme Mermaid est recommandé. -->
+<!-- Describe the exchanges between repositories: synchronous REST APIs,
+asynchronous messages (Kafka, JMS, Camel), shared files, shared database,
+etc. A Mermaid diagram is recommended. -->
 
 ```mermaid
 graph LR
-  A[Ce repo] -->|REST / events| B[Autre repo]
+  A[This repo] -->|REST / events| B[Other repo]
 ```
 
-## 3. Architecture interne (ce repo)
+## 3. Internal architecture (this repo)
 
-### Modules (si multi-module Maven)
+### Modules (if multi-module Maven)
 
-| Module Maven | Package racine | Responsabilité |
+| Maven module | Root package | Responsibility |
 |---|---|---|
-| `<module>` | `com.<org>.<projet>.<module>` | |
+| `<module>` | `com.<org>.<project>.<module>` | |
 
-> Si l'application est un module unique, indiquer "N/A — module unique" et
-> se référer directement à `.copilot/rules/project-structure.md`.
+> If the application is a single module, write "N/A — single module" and
+> refer directly to `.copilot/rules/project-structure.md`.
 
-### Couches applicatives
+### Application layers
 
 ```
-src/main/java/com/<org>/<projet>/
-├── <domaine>/
-│   ├── api/            # Contrôleurs REST
-│   ├── service/        # Logique métier
-│   ├── repository/     # Accès données (Spring Data JPA)
-│   ├── model/          # Entités JPA
-│   ├── dto/            # Objets d'échange (records)
-│   ├── route/          # Routes Apache Camel
-│   └── config/         # Configuration Spring
+src/main/java/com/<org>/<project>/
+├── <domain>/
+│   ├── api/            # REST controllers
+│   ├── service/        # Business logic
+│   ├── repository/     # Data access (Spring Data JPA)
+│   ├── model/          # JPA entities
+│   ├── dto/            # Exchange objects (records)
+│   ├── route/          # Apache Camel routes
+│   └── config/         # Spring configuration
 ```
 
-Le détail des règles de placement du code par fonctionnalité/domaine est
-défini dans `.github/instructions/project-structure.instructions.md` —
-**source de vérité** pour l'agent Architect et l'agent Dev.
+The details of the code placement rules per feature/domain are defined in
+`.github/instructions/project-structure.instructions.md` — the **source of
+truth** for the Architect agent and the Dev agent.
 
-## 4. Diagramme de composants
+## 4. Component diagram
 
 ```mermaid
 graph TD
   Client --> Controller
   Controller --> Service
   Service --> Repository
-  Repository --> DB[(Base de données)]
-  Service --> CamelRoute[Route Apache Camel]
-  CamelRoute --> ExternalSystem[Système externe]
+  Repository --> DB[(Database)]
+  Service --> CamelRoute[Apache Camel Route]
+  CamelRoute --> ExternalSystem[External system]
 ```
 
-## 5. Décisions d'architecture (ADR courtes)
+## 5. Architecture decisions (short ADRs)
 
-| Date | Décision | Justification |
+| Date | Decision | Rationale |
 |---|---|---|
 | | | |
 
-## 6. Références
+## 6. References
 
-- Spécifications fonctionnelles : `docs/specs/`
-- Règles de placement du code : `.github/instructions/project-structure.instructions.md`
-- Règles de style : `.github/instructions/code-style.instructions.md`
-- Règles base de données : `.github/instructions/database.instructions.md`
-- Règles sécurité : `.github/instructions/security.instructions.md`
+- Functional specifications: `docs/specs/`
+- Code placement rules: `.github/instructions/project-structure.instructions.md`
+- Style rules: `.github/instructions/code-style.instructions.md`
+- Database rules: `.github/instructions/database.instructions.md`
+- Security rules: `.github/instructions/security.instructions.md`

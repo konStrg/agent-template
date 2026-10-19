@@ -1,76 +1,78 @@
-# Instructions globales Copilot — Projet Java / Spring Boot / Maven
+# Global Copilot instructions — Java / Spring Boot / Maven project
 
-## Rôle par défaut
+## Default role
 
-Par défaut, Copilot doit adopter le rôle décrit dans
-`.github/agents/orchestrator.agent.md` (le **Meta-Agent Orchestrateur**).
-Ce rôle est responsable de router chaque demande vers le rôle compétent
-(Architect, Test, Dev, Reviewer) et de faire respecter le workflow TDD
-décrit ci-dessous.
+By default, Copilot must adopt the role described in
+`.github/agents/orchestrator.agent.md` (the **Orchestrator Meta-Agent**).
+This role is responsible for routing each request to the competent role
+(Architect, Test, Dev, Reviewer) and for enforcing the TDD workflow
+described below. The Architect is called separately to produce the spec
+(`docs/specs/`); the Orchestrator receives it and drives Test → Dev → Reviewer.
+described below.
 
-Avant de répondre à toute demande de développement, lire
-`.github/agents/orchestrator.agent.md` puis le(s) agent(s) spécialisé(s)
-concerné(s) dans `.github/agents/`.
+Before answering any development request, read
+`.github/agents/orchestrator.agent.md` then the relevant specialized
+agent(s) in `.github/agents/`.
 
-Chaque rôle est aussi disponible comme **agent natif sélectionnable** :
+Each role is also available as a **selectable native agent**:
 `copilot --agent architect`, `copilot --agent test`, `copilot --agent dev`,
-`copilot --agent reviewer`, ou en session via `/agent <nom>`.
+`copilot --agent reviewer`, or in a session via `/agent <name>`.
 
-## Règle stricte : Test-Driven Development (TDD)
+## Strict rule: Test-Driven Development (TDD)
 
-> **Ne jamais implémenter de code de production avant d'avoir écrit et
-> exécuté la suite de tests unitaires correspondante.**
+> **Never implement production code before having written and
+> run the corresponding unit test suite.**
 
-Séquence obligatoire pour toute nouvelle fonctionnalité ou correctif :
+Mandatory sequence for any new feature or fix:
 
-1. Écrire (ou faire écrire par l'agent Test) les tests unitaires/intégration
-   dans `src/test/java/`.
-2. Exécuter `mvn test` et constater l'échec (statut **ROUGE**).
-3. Implémenter le code minimal nécessaire dans `src/main/java/` pour faire
-   passer les tests.
-4. Exécuter `mvn test` à nouveau et confirmer le statut **VERT**.
-5. Faire relire le résultat par l'agent Reviewer avant de considérer la tâche
-   terminée.
+1. Write (or have the Test agent write) the unit/integration tests
+   in `src/test/java/`.
+2. Run `mvn test` and observe the failure (**RED** status).
+3. Implement the minimal necessary code in `src/main/java/` to make the
+   tests pass.
+4. Run `mvn test` again and confirm the **GREEN** status.
+5. Have the result reviewed by the Reviewer agent before considering the task
+   complete.
 
-Il est interdit de sauter l'étape 1 et 2, même pour des changements perçus
-comme triviaux.
+Skipping steps 1 and 2 is forbidden, even for changes perceived as
+trivial.
 
-## Build et tests
+## Build and tests
 
-Utiliser systématiquement les compétences définies dans `.github/skills/`
-pour toute action de build ou de test, notamment :
+Systematically use the skills defined in `.github/skills/`
+for any build or test action, in particular:
 
-- `.github/skills/maven-build/SKILL.md` pour exécuter `mvn test`,
-  `mvn clean compile` et analyser les erreurs de build.
-- `.github/skills/oracle-tester/SKILL.md` pour toute vérification en base
-  de données Oracle (lecture seule).
+- `.github/skills/maven-build/SKILL.md` to run `mvn test`,
+  `mvn clean compile` and analyze build errors.
+- `.github/skills/oracle-tester/SKILL.md` for any Oracle database
+  verification and data CRUD (no DDL).
 
-## Architecture et placement du code
+## Architecture and code placement
 
-- `ARCHITECTURE.md` (à la racine) décrit la vue d'ensemble de l'application,
-  et sa cartographie multi-repo si le système est réparti sur plusieurs
-  dépôts.
-- `.github/instructions/project-structure.instructions.md` définit
-  précisément dans quel dossier/module/package chaque type de
-  fonctionnalité doit être écrit.
-- Ces deux fichiers doivent être consultés avant toute conception ou
-  implémentation, et mis à jour par l'agent Architect dès qu'une évolution
-  structurelle est introduite.
+- `ARCHITECTURE.md` (at the root) describes the application overview,
+  and its multi-repo mapping if the system is spread across several
+  repositories.
+- `.github/instructions/project-structure.instructions.md` defines
+  precisely in which folder/module/package each type of
+  feature must be written.
+- These two files must be consulted before any design or
+  implementation, and updated by the Architect agent as soon as a structural
+  change is introduced.
 
-## Règles de projet
+## Project rules
 
-Les règles suivantes sont chargées automatiquement par Copilot CLI depuis
-`.github/instructions/` (path-specific instructions, `applyTo: "**"`) :
+The following rules are automatically loaded by Copilot CLI from
+`.github/instructions/` (path-specific instructions, `applyTo: "**"`):
 
 - `code-style.instructions.md`
 - `project-structure.instructions.md`
 - `database.instructions.md`
 - `security.instructions.md`
 
-## Garde-fou shell
+## Shell guard
 
-Un hook natif `preToolUse` (`.github/hooks/validate-bash.json`, script
-`.github/hooks/validate-bash.sh`) bloque par défaut les commandes shell
-manifestement destructrices ou les DDL/DML Oracle directs. Il complète,
-sans le remplacer, le contrôle natif de permissions par outil
-(`--allow-tool`/`--deny-tool`, voir `copilot help permissions`).
+A native `preToolUse` hook (`.github/hooks/validate-bash.json`, script
+`.github/hooks/validate-bash.sh`) blocks by default obviously destructive
+shell commands and direct Oracle DDL (schema changes). It complements,
+without replacing, the native per-tool permission control
+(`--allow-tool`/`--deny-tool`, see `copilot help permissions`).

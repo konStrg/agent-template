@@ -1,66 +1,64 @@
 ---
 name: maven-build
-description: Instructions pour exécuter mvn test, mvn clean compile et mvn clean verify, et analyser les erreurs de build/tests. Utiliser pour toute action de build ou de test du projet.
+description: Instructions for running mvn test, mvn clean compile and mvn clean verify, and analyzing build/test errors. Use for any build or test action on the project.
 ---
 
 # Skill : maven-build
 
 ## Objectif
 
-Fournir une procédure fiable pour compiler le projet et exécuter la suite de
-tests Maven, puis analyser les résultats pour déterminer le statut
-ROUGE/VERT du workflow TDD.
+Provide a reliable procedure to compile the project and run the Maven test
+suite, then analyze the results to determine the RED/GREEN status of the
+TDD workflow.
 
-## Commandes principales
+## Main commands
 
-### Exécuter les tests
+### Run the tests
 
 ```bash
 mvn test
 ```
 
-- Utilisée par l'agent **Test** pour valider le statut **ROUGE** (tests en
-  échec attendu) avant implémentation.
-- Utilisée par l'agent **Dev** pour valider le statut **VERT** (tous les
-  tests passent) après implémentation.
+- Used by the **Test** agent to confirm the **RED** status (tests expected
+  to fail) before implementation.
+- Used by the **Dev** agent to confirm the **GREEN** status (all tests
+  pass) after implementation.
 
-### Compiler sans exécuter les tests
+### Compile without running the tests
 
 ```bash
 mvn clean compile
 ```
 
-- Utilisée pour vérifier rapidement l'absence d'erreurs de compilation
-  dans `src/main/java/`.
+- Used to quickly check that there are no compilation errors in
+  `src/main/java/`.
 
-### Build complet (avec tests)
+### Full build (with tests)
 
 ```bash
 mvn clean verify
 ```
 
-- À utiliser avant une finalisation/review complète (étape Reviewer).
+- To be used before a complete finalization/review (Reviewer step).
 
-## Analyse des erreurs
+## Error analysis
 
-1. Lire la sortie Maven en priorité dans les sections :
-   - `[ERROR]` pour les erreurs de compilation,
-   - `Tests run: X, Failures: Y, Errors: Z, Skipped: W` pour le résumé des
-     tests.
-2. Pour chaque test en échec, consulter la stack trace associée
-   (`target/surefire-reports/*.txt`) afin d'identifier la cause exacte.
-3. Distinguer :
-   - une **erreur de compilation** (le code ne compile pas du tout),
-   - un **échec d'assertion** (le test s'exécute mais le résultat diffère),
-   - une **erreur d'exécution** (exception non gérée pendant le test).
-4. Ne jamais ignorer un test en échec sans comprendre la cause racine.
+1. Read the Maven output primarily in the following sections:
+   - `[ERROR]` for compilation errors,
+   - `Tests run: X, Failures: Y, Errors: Z, Skipped: W` for the test
+     summary.
+2. For each failing test, check the associated stack trace
+   (`target/surefire-reports/*.txt`) to identify the exact cause.
+3. Distinguish between:
+   - a **compilation error** (the code does not compile at all),
+   - an **assertion failure** (the test runs but the result differs),
+   - a **runtime error** (unhandled exception during the test).
+4. Never ignore a failing test without understanding the root cause.
 
-## Bonnes pratiques
+## Best practices
 
-- Toujours exécuter `mvn test` depuis la racine du projet (là où se trouve
-  `pom.xml`).
-- Utiliser `mvn -q test` pour réduire le bruit si seul le résultat final
-  importe, mais repasser en mode verbeux (`mvn test`) en cas d'échec pour
-  obtenir le détail.
-- Ne jamais exécuter de commande Maven destructrice (ex. déploiement) sans
-  validation explicite de l'utilisateur.
+- Always run `mvn test` from the project root (where `pom.xml` is located).
+- Use `mvn -q test` to reduce noise if only the final result matters, but
+  switch back to verbose mode (`mvn test`) on failure to get the details.
+- Never run a destructive Maven command (e.g. deployment) without explicit
+  user validation.
