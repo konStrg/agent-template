@@ -1,0 +1,6 @@
+{
+  "defaultPermissionMode": "manual",
+  "customAgents": {
+    "defaultLocalOnly": false
+  }
+}

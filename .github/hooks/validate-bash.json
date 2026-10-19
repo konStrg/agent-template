@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "bash .github/hooks/validate-bash.sh",
+        "powershell": "bash .github/hooks/validate-bash.sh",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

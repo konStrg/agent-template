@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "example-server": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@example/mcp-server"],
+      "env": {},
+      "tools": ["*"]
+    }
+  }
+}
